@@ -1,0 +1,159 @@
+
+ALTER TABLE stocks_history ALTER column stock_currency SET (fillfactor=100);
+
+IMPORT FOREIGN SCHEMA public FROM SERVER shard_node_1 INTO public;
+
+-----------------
+
+ALTER TABLE stocks_history ATTACH PARTITION BY RANGE (at) ;
+
+CREATE TABLE stocks_history_y2018m05 (like stocks_history including all);
+
+
+CREATE TABLE stocks_history (
+stock_id int,
+stock_price int,
+stock_currency text,
+at timestamp with time zone not null 
+) PARTITION BY RANGE (at) ;
+
+
+CREATE TABLE stocks_history_y2018m01
+    PARTITION OF stocks_history (
+    stock_currency DEFAULT 'Rupees' 
+) FOR VALUES FROM ('2018-01-01 00:00:00') TO ('2018-02-01 00:00:00');
+
+CREATE TABLE stocks_history_y2018m02
+    PARTITION OF stocks_history (
+    stock_currency DEFAULT 'Rupees'
+) FOR VALUES FROM ('2018-02-01 00:00:00') TO ('2018-03-01 00:00:00');
+
+CREATE TABLE stocks_history_y2018m03
+    PARTITION OF stocks_history (
+    stock_currency DEFAULT 'Rupees'
+) FOR VALUES FROM ('2018-03-01 00:00:00') TO ('2018-04-01 00:00:00');
+
+CREATE TABLE stocks_history_y2018m04
+    PARTITION OF stocks_history (
+    stock_currency DEFAULT 'Rupees'
+) FOR VALUES FROM ('2018-04-01 00:00:00') TO ('2018-05-01 00:00:00');
+
+
+ALTER TABLE stocks_history DETACH PARTITION stocks_history_y2018m01;
+ALTER TABLE stocks_history DETACH PARTITION stocks_history_y2018m02;
+ALTER TABLE stocks_history DETACH PARTITION stocks_history_y2018m03;
+ALTER TABLE stocks_history DETACH PARTITION stocks_history_y2018m04;
+
+drop table stocks_history;
+
+
+CREATE FOREIGN TABLE stocks_history_y2018m01
+    PARTITION OF stocks_history
+    FOR VALUES FROM ('2018-01-01 00:00:00') TO ('2018-02-01 00:00:00')
+    SERVER shard_node_1;
+
+CREATE FOREIGN TABLE stocks_history_y2018m02
+    PARTITION OF stocks_history
+    FOR VALUES FROM ('2018-02-01 00:00:00') TO ('2018-03-01 00:00:00')
+    SERVER shard_node_1;
+	
+CREATE FOREIGN TABLE stocks_history_y2018m03
+    PARTITION OF stocks_history
+    FOR VALUES FROM ('2018-03-01 00:00:00') TO ('2018-04-01 00:00:00')
+    SERVER shard_node_1;
+
+CREATE FOREIGN TABLE stocks_history_y2018m04
+    PARTITION OF stocks_history
+    FOR VALUES FROM ('2018-04-01 00:00:00') TO ('2018-05-01 00:00:00')
+    SERVER shard_node_1;
+	
+
+
+====================================
+CREATE TABLE temperatures (
+    at      date,
+    city_id    text,
+	temp	int,
+	temp_unit text
+);
+
+CREATE TABLE cities (
+    city_id      date,
+    city_name    text,
+    city_state text,
+    city_speacial text
+);
+
+==========================
+CREATE TABLE measurement (
+    logdate         timestamp with time zone not null,
+    peaktemp        int,
+    unitsales       int
+) PARTITION BY RANGE (logdate);
+
+
+CREATE TABLE measurement_y2018m07
+    PARTITION OF measurement (
+    unitsales DEFAULT 0
+) FOR VALUES FROM ('2018-07-01 00:00:00') TO ('2018-08-01 00:00:00');
+
+
+CREATE TABLE measurement_y2018m08
+    PARTITION OF measurement (
+    unitsales DEFAULT 0
+) FOR VALUES FROM ('2018-08-01 00:00:00') TO ('2018-09-01 00:00:00');
+
+
+CREATE TABLE measurement_y2018m09
+    PARTITION OF measurement (
+    unitsales DEFAULT 0
+) FOR VALUES FROM ('2018-09-01 00:00:00') TO ('2018-10-01 00:00:00');
+
+CREATE TABLE measurement_y2018m10
+    PARTITION OF measurement (
+    unitsales DEFAULT 0
+) FOR VALUES FROM ('2018-10-01 00:00:00') TO ('2018-11-01 00:00:00');
+
+CREATE TABLE measurement_y2018m11
+    PARTITION OF measurement (
+    unitsales DEFAULT 0
+) FOR VALUES FROM ('2018-11-01 00:00:00') TO ('2018-12-01 00:00:00');
+
+
+CREATE TABLE measurement_y2018m12
+    PARTITION OF measurement (
+    unitsales DEFAULT 0
+) FOR VALUES FROM ('2018-12-01 00:00:00') TO ('2019-01-01 00:00:00');
+
+
+
+2592000
+2505000
+
+
+select * from (select generate_series(1,2505000),  'Rupees', generate_series(timestamp '2018-05-01 00:00:00',timestamp '2018-05-02 00:00:00', interval '1 sec') )as foo INNER JOIN on stock_id.id=foo.id;
+
+
+insert into stocks_history_y2018m05 values ( generate_series(1,43200), generate_series(1,43200), 'Rupees', generate_series(timestamp '2018-05-01 00:00:00',timestamp '2018-05-02 00:00:00', interval '1 sec'));
+
+
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-05-01 00:00:00',timestamp '2018-05-30 00:00:00', interval '1 sec')); 
+
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-06-01 00:00:00',timestamp '2018-12-31 00:00:00', interval '1 min')); 
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-07-01 00:00:00',timestamp '2018-12-31 00:00:00', interval '1 min')); 
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-08-01 00:00:00',timestamp '2018-12-31 00:00:00', interval '1 min')); 
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-09-01 00:00:00',timestamp '2018-12-31 00:00:00', interval '1 min')); 
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-10-01 00:00:00',timestamp '2018-12-31 00:00:00', interval '1 min')); 
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-11-01 00:00:00',timestamp '2018-12-31 00:00:00', interval '1 min')); 
+insert into stocks_history values ( generate_series(1,100000), generate_series(1,100000), 'Rupees', generate_series(timestamp '2018-12-01 00:00:00',timestamp '2018-12-31 00:00:00', interval '1 min')); 
+
+
+
+
+
+
+insert into measurement values ( generate_series(timestamp '2018-07-01 00:00:00',timestamp '2018-12-01 00:00:00', interval '5 min'), generate_series(1,10000), generate_series(1,10000)); 
+
+explain analyze select * from measurement;
+
+explain analyze select * from measurement where logdate between '2018-07-01 00:00:00' and '2018-09-01 00:00:00' ;
